@@ -46,7 +46,7 @@ variable "region" {
 
 variable "service" {
   type        = string
-  default     = "petsocialmedia"
+  default     = "socialmedia"
   description = "The name of the service"
 }
 
@@ -81,6 +81,7 @@ resource "google_project_service" "secretmanager" {
   disable_on_destroy = false
 }
 
+
 # ------------------------------------------------------------------------------
 # CREATE COMPUTE NETWORKS
 # ------------------------------------------------------------------------------
@@ -110,8 +111,10 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 }
 
 resource "google_vpc_access_connector" "connector" {
-  name          = "vpc-con-social-media"
-  ip_cidr_range = "10.10.0.0/28"
+  for_each = {"us-west1": 8, "us-central1": 9, "us-east1": 10}
+  name          = "vpc-con-${each.key}"
+  ip_cidr_range = "10.${each.value}.0.0/28"
+  region        = each.key
   network       = google_compute_network.private_network.name
 }
 
@@ -378,7 +381,7 @@ data "google_cloud_run_locations" "default" { }
 resource "google_cloud_run_service" "service" {
   for_each = toset([for location in data.google_cloud_run_locations.default.locations : location if can(regex("us-(?:west|central|east)1", location))])
   name                       = "${var.project}--${each.value}"
-  location                   = var.region
+  location                   = each.value
   project                    = var.project
   autogenerate_revision_name = true
   depends_on = [google_sql_database_instance.instance]
@@ -400,7 +403,7 @@ resource "google_cloud_run_service" "service" {
         "autoscaling.knative.dev/maxScale"      = "100"
         "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.instance.connection_name
         "run.googleapis.com/client-name"        = "terraform"
-        "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.connector.name
+        "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.connector[each.key].name
         "run.googleapis.com/vpc-access-egress"    = "all-traffic"
       }
     }
@@ -449,9 +452,9 @@ module "lb-http" {
   project = var.project
   name    = var.project
 
-  ssl                             = false
-  managed_ssl_certificate_domains = []
-  https_redirect                  = false
+  ssl                             = true
+  managed_ssl_certificate_domains = ["petsocialmedia.dev"]
+  https_redirect                  = true
   backends = {
     default = {
       description            = null

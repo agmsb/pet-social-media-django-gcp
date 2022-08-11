@@ -49,25 +49,36 @@ def get_secret(secret_name, project_id):
     return response.payload.data.decode("UTF-8")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True # TODO: Change this to False in production
 PORT = 8080
 LOCAL_HOST_1 = '127.0.0.1'
 LOCAL_HOST_2 = '0.0.0.0'
 
-WEBISTE_URL = 'https://petsocialmedia-j2ys2raxoq-uw.a.run.app' # TODO: change to your website url
+WEBISTE_URL_US_CENTRAL1 = 'https://petsocialmedia-356303--us-central1-j2ys2raxoq-uc.a.run.app' # TODO: change to your website url in us-central1
+WEBISTE_URL_US_WEST1 = 'https://petsocialmedia-356303--us-west1-j2ys2raxoq-uw.a.run.app' # TODO: change to your website url in us-west1
+WEBISTE_URL_US_EAST1 = 'https://petsocialmedia-356303--us-east1-j2ys2raxoq-ue.a.run.app' # TODO: change to your website url in us-east1
+WEBSITE_GLOBAL_HOST = '34.117.109.248' # TODO: change to your website global host (eg, 123.456.789.123)
+
 LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'
 
-WEBISTE_HOST_1 = WEBISTE_URL.replace("https://", "") 
+WEBISTE_HOST_US_CENTRAL1 = WEBISTE_URL_US_CENTRAL1.replace("https://", "") 
+WEBISTE_HOST_US_WEST1 = WEBISTE_URL_US_WEST1.replace("https://", "")
+WEBISTE_HOST_US_EAST1 = WEBISTE_URL_US_EAST1.replace("https://", "")
 
 CSRF_TRUSTED_ORIGINS = [
-    WEBISTE_URL,
+    WEBISTE_URL_US_CENTRAL1,
+    WEBISTE_URL_US_WEST1, 
+    WEBISTE_URL_US_EAST1,
     LOCAL_WEBSITE_URL,
 ]
 
 ALLOWED_HOSTS = [
     LOCAL_HOST_1,
     LOCAL_HOST_2,
-    WEBISTE_HOST_1, 
+    WEBISTE_HOST_US_CENTRAL1, 
+    WEBISTE_HOST_US_EAST1, 
+    WEBISTE_HOST_US_WEST1,
+    WEBSITE_GLOBAL_HOST,
     'localhost'
 ]
 
