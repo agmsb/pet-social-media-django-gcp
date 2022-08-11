@@ -87,11 +87,10 @@ resource "google_project_service" "secretmanager" {
 }
 
 
+# Step 4: Create compute networks
 # ------------------------------------------------------------------------------
-# CREATE COMPUTE NETWORKS
+# SEVERLESS VPC CONNECTOR FOR CLOUD SQL
 # ------------------------------------------------------------------------------
-
-# Simple network, auto-creates subnetworks
 resource "google_compute_network" "private_network" {
   provider = google
   name = "pet-social-media-private-network-${random_id.name.hex}"
@@ -124,12 +123,12 @@ resource "google_vpc_access_connector" "connector" {
 }
 
 
-# Step 4: Create a custom Service Account
+# Step 5: Create a custom Service Account
 resource "google_service_account" "django" {
   account_id = "django"
 }
 
-# Step 5: Create the database
+# Step 6: Create the database
 resource "random_string" "random" {
   length           = 4
   special          = false
@@ -175,10 +174,23 @@ resource "google_sql_user" "django" {
 }
 
 
-# Step 6: Create the secrets
+# Step 7: Create Cloud Storage
 resource "google_storage_bucket" "media" {
   name     = "${var.project}-bucket"
   location = "US"
+}
+
+# Step 8: Prepare the secrets for Django
+resource "google_secret_manager_secret_version" "django_settings" {
+  secret = google_secret_manager_secret.django_settings.id
+
+  secret_data = templatefile("etc/env.tpl", {
+    bucket     = google_storage_bucket.media.name
+    secret_key = random_password.django_secret_key.result
+    user       = google_sql_user.django
+    instance   = google_sql_database_instance.instance
+    database   = google_sql_database.database
+  })
 }
 
 resource "random_password" "django_secret_key" {
@@ -196,20 +208,7 @@ resource "google_secret_manager_secret" "django_settings" {
 
 }
 
-# Step 7: Prepare the secrets for Django
-resource "google_secret_manager_secret_version" "django_settings" {
-  secret = google_secret_manager_secret.django_settings.id
-
-  secret_data = templatefile("etc/env.tpl", {
-    bucket     = google_storage_bucket.media.name
-    secret_key = random_password.django_secret_key.result
-    user       = google_sql_user.django
-    instance   = google_sql_database_instance.instance
-    database   = google_sql_database.database
-  })
-}
-
-# Step 8: Expand Service Account permissions
+# Step 9: Expand Service Account permissions
 resource "google_secret_manager_secret_iam_binding" "django_settings" {
   secret_id = google_secret_manager_secret.django_settings.id
   role      = "roles/secretmanager.secretAccessor"
@@ -225,6 +224,9 @@ locals {
 
 
 # Step 9: Populate secrets
+# ------------------------------------------------------------------------------
+# DATABASE_PASSWORD
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "DATABASE_PASSWORD" {
   secret_id = "DATABASE_PASSWORD"
   replication {
@@ -244,6 +246,9 @@ resource "google_secret_manager_secret_iam_binding" "DATABASE_PASSWORD" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+# ------------------------------------------------------------------------------
+# DATABASE_NAME
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "DATABASE_NAME" {
   secret_id = "DATABASE_NAME"
   replication {
@@ -263,6 +268,9 @@ resource "google_secret_manager_secret_iam_binding" "DATABASE_NAME" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+# ------------------------------------------------------------------------------
+# DATABASE_USER
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "DATABASE_USER" {
   secret_id = "DATABASE_USER"
   replication {
@@ -282,6 +290,9 @@ resource "google_secret_manager_secret_iam_binding" "DATABASE_USER" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+# ------------------------------------------------------------------------------
+# DATABASE_HOST_PROD
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "DATABASE_HOST_PROD" {
   secret_id = "DATABASE_HOST_PROD"
   replication {
@@ -301,6 +312,9 @@ resource "google_secret_manager_secret_iam_binding" "DATABASE_HOST_PROD" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+# ------------------------------------------------------------------------------
+# DATABASE_PORT_PROD
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "DATABASE_PORT_PROD" {
   secret_id = "DATABASE_PORT_PROD"
   replication {
@@ -320,6 +334,9 @@ resource "google_secret_manager_secret_iam_binding" "DATABASE_PORT_PROD" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+# ------------------------------------------------------------------------------
+# PROJECT_ID
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "PROJECT_ID" {
   secret_id = "PROJECT_ID"
   replication {
@@ -338,6 +355,9 @@ resource "google_secret_manager_secret_iam_binding" "PROJECT_ID" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+# ------------------------------------------------------------------------------
+# BUCKET_NAME
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "BUCKET_NAME" {
   secret_id = "BUCKET_NAME"
   replication {
@@ -356,6 +376,9 @@ resource "google_secret_manager_secret_iam_binding" "BUCKET_NAME" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+# ------------------------------------------------------------------------------
+# EXTERNAL_IP
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret" "EXTERNAL_IP" {
   secret_id = "EXTERNAL_IP"
   replication {
@@ -388,6 +411,9 @@ resource "google_secret_manager_secret" "superuser_password" {
   depends_on = [google_project_service.secretmanager]
 }
 
+# ------------------------------------------------------------------------------
+# superuser_password
+# ------------------------------------------------------------------------------
 resource "google_secret_manager_secret_version" "superuser_password" {
   secret      = google_secret_manager_secret.superuser_password.id
   secret_data = random_password.superuser_password.result
@@ -445,7 +471,6 @@ resource "google_cloud_run_service" "service" {
   }
 }
 
-# Step 11: Specify Cloud Run permissions
 data "google_iam_policy" "noauth" {
   binding {
     role = "roles/run.invoker"
@@ -465,6 +490,7 @@ resource "google_cloud_run_service_iam_policy" "noauth" {
 }
 
 
+# Step 12: Create Load Balancer to handle traffics from multiple regions 
 resource "google_compute_region_network_endpoint_group" "default" {
   for_each = toset([for location in data.google_cloud_run_locations.default.locations : location if can(regex("us-(?:west|central|east)1", location))])
   name                  = "${var.project}--neg--${each.key}"
@@ -515,7 +541,7 @@ module "lb-http" {
 }
 
 
-# Step 12: Grant access to the database
+# Step 13: Grant access to the database
 resource "google_project_iam_binding" "service_permissions" {
   for_each = toset([
     "run.admin", "cloudsql.client"
