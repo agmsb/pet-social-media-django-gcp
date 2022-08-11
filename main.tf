@@ -118,6 +118,7 @@ resource "google_vpc_access_connector" "connector" {
   network       = google_compute_network.private_network.name
 }
 
+
 # Step 4: Create a custom Service Account
 resource "google_service_account" "django" {
   account_id = "django"
@@ -350,6 +351,25 @@ resource "google_secret_manager_secret_iam_binding" "BUCKET_NAME" {
   members   = [local.cloudbuild_serviceaccount]
 }
 
+resource "google_secret_manager_secret" "EXTERNAL_IP" {
+  secret_id = "EXTERNAL_IP"
+  replication {
+    automatic = true
+  }
+  depends_on = [module.lb-http]
+}
+
+resource "google_secret_manager_secret_version" "EXTERNAL_IP" {
+  secret      = google_secret_manager_secret.EXTERNAL_IP.id
+  secret_data = module.lb-http.external_ip
+}
+
+resource "google_secret_manager_secret_iam_binding" "EXTERNAL_IP" {
+  secret_id = google_secret_manager_secret.EXTERNAL_IP.id
+  role      = "roles/secretmanager.secretAccessor"
+  members   = [local.cloudbuild_serviceaccount]
+}
+
 resource "random_password" "superuser_password" {
   length  = 32
   special = false
@@ -455,12 +475,13 @@ module "lb-http" {
   ssl                             = true
   managed_ssl_certificate_domains = ["petsocialmedia.dev"]
   https_redirect                  = true
+  use_ssl_certificates            = false
   backends = {
     default = {
       description            = null
       enable_cdn             = true
       custom_request_headers = null
-
+  
       log_config = {
         enable      = true
         sample_rate = 1.0

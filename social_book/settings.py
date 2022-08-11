@@ -57,30 +57,36 @@ LOCAL_HOST_2 = '0.0.0.0'
 WEBISTE_URL_US_CENTRAL1 = 'https://petsocialmedia-356303--us-central1-j2ys2raxoq-uc.a.run.app' # TODO: change to your website url in us-central1
 WEBISTE_URL_US_WEST1 = 'https://petsocialmedia-356303--us-west1-j2ys2raxoq-uw.a.run.app' # TODO: change to your website url in us-west1
 WEBISTE_URL_US_EAST1 = 'https://petsocialmedia-356303--us-east1-j2ys2raxoq-ue.a.run.app' # TODO: change to your website url in us-east1
-WEBSITE_GLOBAL_HOST = '34.117.109.248' # TODO: change to your website global host (eg, 123.456.789.123)
+WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
 
 LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'
+DOMAIN_URL = "https://petsocialmedia.dev" # TODO: change to your domain url
 
 WEBISTE_HOST_US_CENTRAL1 = WEBISTE_URL_US_CENTRAL1.replace("https://", "") 
 WEBISTE_HOST_US_WEST1 = WEBISTE_URL_US_WEST1.replace("https://", "")
 WEBISTE_HOST_US_EAST1 = WEBISTE_URL_US_EAST1.replace("https://", "")
+DOMAIN_HOST = DOMAIN_URL.replace("https://", "")
 
 CSRF_TRUSTED_ORIGINS = [
     WEBISTE_URL_US_CENTRAL1,
     WEBISTE_URL_US_WEST1, 
     WEBISTE_URL_US_EAST1,
     LOCAL_WEBSITE_URL,
+    DOMAIN_URL
 ]
 
-ALLOWED_HOSTS = [
-    LOCAL_HOST_1,
-    LOCAL_HOST_2,
-    WEBISTE_HOST_US_CENTRAL1, 
-    WEBISTE_HOST_US_EAST1, 
-    WEBISTE_HOST_US_WEST1,
-    WEBSITE_GLOBAL_HOST,
-    'localhost'
-]
+# ALLOWED_HOSTS = [
+#     LOCAL_HOST_1,
+#     LOCAL_HOST_2,
+#     WEBISTE_HOST_US_CENTRAL1, 
+#     WEBISTE_HOST_US_EAST1, 
+#     WEBISTE_HOST_US_WEST1,
+#     WEBSITE_GLOBAL_HOST,
+#     DOMAIN_HOST,
+#     'localhost'
+# ]
+
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
