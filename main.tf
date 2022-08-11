@@ -50,6 +50,11 @@ variable "service" {
   description = "The name of the service"
 }
 
+variable "domain" {
+  type        = string
+  description = "The custom domain of the service (e.g. abc.com) (leave blank to skip this step)"
+}
+
 # Step 3: Activate service APIs
 resource "google_project_service" "run" {
   service            = "run.googleapis.com"
@@ -415,6 +420,11 @@ resource "google_cloud_run_service" "service" {
           name = "PROJECT_ID"
           value = var.project
         }
+
+        env {
+          name = "DOMAIN_NAME"
+          value = var.domain
+        }
       }
     }
 
@@ -473,7 +483,7 @@ module "lb-http" {
   name    = var.project
 
   ssl                             = true
-  managed_ssl_certificate_domains = ["petsocialmedia.dev"]
+  managed_ssl_certificate_domains = [var.domain]
   https_redirect                  = true
   use_ssl_certificates            = false
   backends = {

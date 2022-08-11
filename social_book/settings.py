@@ -48,6 +48,13 @@ def get_secret(secret_name, project_id):
     response = secret_client.access_secret_version(request={"name": name})
     return response.payload.data.decode("UTF-8")
 
+def process_url(url):
+    """Process the URL to remove the protocol and the trailing slash."""
+    url = url.replace("https://", "")
+    if url[:-1] == "/":
+        url = url[:len(url)-1]
+    return url
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True # TODO: Change this to False in production
 PORT = 8080
@@ -60,12 +67,12 @@ WEBISTE_URL_US_EAST1 = 'https://petsocialmedia-356303--us-east1-j2ys2raxoq-ue.a.
 WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
 
 LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'
-DOMAIN_URL = "https://petsocialmedia.dev" # TODO: change to your domain url
+DOMAIN_URL = os.environ.get("DOMAIN_NAME")
 
-WEBISTE_HOST_US_CENTRAL1 = WEBISTE_URL_US_CENTRAL1.replace("https://", "") 
-WEBISTE_HOST_US_WEST1 = WEBISTE_URL_US_WEST1.replace("https://", "")
-WEBISTE_HOST_US_EAST1 = WEBISTE_URL_US_EAST1.replace("https://", "")
-DOMAIN_HOST = DOMAIN_URL.replace("https://", "")
+WEBISTE_HOST_US_CENTRAL1 = process_url(WEBISTE_URL_US_CENTRAL1)
+WEBISTE_HOST_US_WEST1 = process_url(WEBISTE_URL_US_WEST1)
+WEBISTE_HOST_US_EAST1 = process_url(WEBISTE_URL_US_EAST1)
+DOMAIN_HOST = process_url(DOMAIN_URL)
 
 CSRF_TRUSTED_ORIGINS = [
     WEBISTE_URL_US_CENTRAL1,
@@ -75,18 +82,17 @@ CSRF_TRUSTED_ORIGINS = [
     DOMAIN_URL
 ]
 
-# ALLOWED_HOSTS = [
-#     LOCAL_HOST_1,
-#     LOCAL_HOST_2,
-#     WEBISTE_HOST_US_CENTRAL1, 
-#     WEBISTE_HOST_US_EAST1, 
-#     WEBISTE_HOST_US_WEST1,
-#     WEBSITE_GLOBAL_HOST,
-#     DOMAIN_HOST,
-#     'localhost'
-# ]
+ALLOWED_HOSTS = [
+    LOCAL_HOST_1,
+    LOCAL_HOST_2,
+    WEBISTE_HOST_US_CENTRAL1, 
+    WEBISTE_HOST_US_EAST1, 
+    WEBISTE_HOST_US_WEST1,
+    WEBSITE_GLOBAL_HOST,
+    DOMAIN_HOST,
+    'localhost'
+]
 
-ALLOWED_HOSTS = ['*']
 
 # Application definition
 
