@@ -24,7 +24,7 @@ terraform {
 
 # Step 2: Set up variables
 provider "google" {
-  credentials = file("core/config/credential.json")
+  credentials = file("../core/config/credential.json")
   project = var.project
   region  = var.region
 }

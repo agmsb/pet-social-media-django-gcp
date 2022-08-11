@@ -6,10 +6,10 @@
 docker-compose.debug.yml
 
 # terraform
-terraform.tfstate
-terraform.tfstate.backup
-.terraform.lock.hcl
-deploystack.json
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/.terraform.lock.hcl
 
 # deploy stack
 test
+deploystack.json

@@ -11,10 +11,10 @@ core/config/credential.json
 docker-compose.debug.yml
 
 # terraform
-terraform.tfstate
-terraform.tfstate.backup
-.terraform.lock.hcl
-deploystack.json
+terraform/terraform.tfstate
+terraform/.terraform.tfstate.lock.info
+terraform/.terraform.lock.hcl
 
 # deploy stack
 test
+deploystack.json
