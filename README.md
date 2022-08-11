@@ -59,6 +59,6 @@ To remove all billing components from the project
 
 Run locally
 
-Run ``python3 manage.py runserver --insecure``
+Run ``PRODUCTION_MODE="production" python3 manage.py runserver --insecure 0.0.0.0:8080``
 
 This is not an official Google product.
