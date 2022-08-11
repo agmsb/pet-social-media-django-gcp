@@ -22,7 +22,6 @@ terraform {
   }
 }
 
-# Step 2: Set up variables
 provider "google" {
   credentials = file("../core/config/credential.json")
   project = var.project
@@ -33,29 +32,7 @@ data "google_project" "project" {
   project_id = var.project
 }
 
-variable "project" {
-  type        = string
-  description = "Google Cloud Project ID"
-}
-
-variable "region" {
-  type        = string
-  default     = "us-west1"
-  description = "Google Cloud Region"
-}
-
-variable "service" {
-  type        = string
-  default     = "socialmedia"
-  description = "The name of the service"
-}
-
-variable "domain" {
-  type        = string
-  description = "The custom domain of the service (e.g. abc.com) (leave blank to skip this step)"
-}
-
-# Step 3: Activate service APIs
+# Step 2: Activate service APIs
 resource "google_project_service" "run" {
   service            = "run.googleapis.com"
   disable_on_destroy = false
@@ -76,6 +53,11 @@ resource "google_project_service" "compute" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "domain" {
+  service            = "compute.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_project_service" "cloudbuild" {
   service            = "cloudbuild.googleapis.com"
   disable_on_destroy = false
@@ -87,11 +69,11 @@ resource "google_project_service" "secretmanager" {
 }
 
 
-# Step 4: Create compute networks
+# Step 3: Create compute networks
 # ------------------------------------------------------------------------------
 # SEVERLESS VPC CONNECTOR FOR CLOUD SQL
 # ------------------------------------------------------------------------------
-resource "google_compute_network" "private_network" {
+resource "google_compute_network" "main" {
   provider = google
   name = "pet-social-media-private-network-${random_id.name.hex}"
 }
@@ -103,13 +85,13 @@ resource "google_compute_global_address" "private_ip_address" {
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
-  network       = google_compute_network.private_network.id
+  network       = google_compute_network.main.id
 }
 
 resource "google_service_networking_connection" "private_vpc_connection" {
   provider = google-beta
 
-  network                 = google_compute_network.private_network.id
+  network                 = google_compute_network.main.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 }
@@ -119,16 +101,16 @@ resource "google_vpc_access_connector" "connector" {
   name          = "vpc-con-${each.key}"
   ip_cidr_range = "10.${each.value}.0.0/28"
   region        = each.key
-  network       = google_compute_network.private_network.name
+  network       = google_compute_network.main.name
 }
 
 
-# Step 5: Create a custom Service Account
+# Step 4: Create a custom Service Account
 resource "google_service_account" "django" {
   account_id = "django"
 }
 
-# Step 6: Create the database
+# Step 5: Create the database
 resource "random_string" "random" {
   length           = 4
   special          = false
@@ -151,12 +133,12 @@ resource "google_sql_database_instance" "instance" {
   name             = "sql-database-private-instance-${random_id.db_name_suffix.hex}"
   database_version = "MYSQL_8_0"
   region           = var.region
-  depends_on = [google_vpc_access_connector.connector, google_compute_network.private_network]
+  depends_on = [google_vpc_access_connector.connector, google_compute_network.main]
   settings {
     tier = "db-f1-micro"
     ip_configuration {
       ipv4_enabled    = "true"
-      private_network = google_compute_network.private_network.id
+      private_network = google_compute_network.main.id
     }
   }
   deletion_protection = true
@@ -174,7 +156,7 @@ resource "google_sql_user" "django" {
 }
 
 
-# Step 7: Create Cloud Storage
+# Step 6: Create Cloud Storage
 resource "google_storage_bucket" "media" {
   name     = "${var.project}-bucket"
   location = "US"
@@ -188,7 +170,7 @@ resource "google_storage_bucket_iam_binding" "binding" {
   ]
 }
 
-# Step 8: Prepare the secrets for Django
+# Step 7: Prepare the secrets for Django
 resource "google_secret_manager_secret_version" "django_settings" {
   secret = google_secret_manager_secret.django_settings.id
 
@@ -216,7 +198,7 @@ resource "google_secret_manager_secret" "django_settings" {
 
 }
 
-# Step 9: Expand Service Account permissions
+# Step 8: Expand Service Account permissions
 resource "google_secret_manager_secret_iam_binding" "django_settings" {
   secret_id = google_secret_manager_secret.django_settings.id
   role      = "roles/secretmanager.secretAccessor"
@@ -370,7 +352,7 @@ resource "google_cloud_run_service_iam_policy" "noauth" {
 }
 
 
-# Step 12: Create Load Balancer to handle traffics from multiple regions 
+# Step 11: Create Load Balancer to handle traffics from multiple regions 
 resource "google_compute_region_network_endpoint_group" "default" {
   for_each = toset([for location in data.google_cloud_run_locations.default.locations : location if can(regex("us-(?:west|central|east)1", location))])
   name                  = "${var.project}--neg--${each.key}"
@@ -421,7 +403,7 @@ module "lb-http" {
 }
 
 
-# Step 13: Grant access to the database
+# Step 12: Grant access to the database
 resource "google_project_iam_binding" "service_permissions" {
   for_each = toset([
     "run.admin", "cloudsql.client"
@@ -437,23 +419,4 @@ resource "google_service_account_iam_binding" "cloudbuild_sa" {
   role               = "roles/iam.serviceAccountUser"
 
   members = [local.cloudbuild_serviceaccount]
-}
-
-
-# Step 14: View final output
-output "sql_private_ip_address" {
-  value     = google_sql_database_instance.instance.private_ip_address
-}
-
-# output "service_url" {
-#   value = google_cloud_run_service.service.status[0].url
-# }
-
-output "url" {
-  value = "http://${module.lb-http.external_ip}"
-}
-
-output "SUPERUSER_PASSWORD" {
-  value     = google_secret_manager_secret_version.SUPERUSER_PASSWORD.secret_data
-  sensitive = true
 }
