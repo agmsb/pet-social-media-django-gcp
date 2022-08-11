@@ -1,10 +1,20 @@
+deploystack.json
+.vscode
+test
+
 .env
+.vscode
+.DS_Store
 core/config/credential.json
-docker-compose.yml
+
+# docker-compose
 docker-compose.debug.yml
+
+# terraform
 terraform.tfstate
 terraform.tfstate.backup
-test
 .terraform.lock.hcl
-app.yaml
 deploystack.json
+
+# deploy stack
+test
