@@ -9,6 +9,8 @@ docker-compose.debug.yml
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 terraform/.terraform.lock.hcl
+terraform/.terraform
+
 
 # deploy stack
 test
