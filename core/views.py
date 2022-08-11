@@ -360,8 +360,6 @@ def settings(request):
             user_profile.location = location
             user_profile.save()
 
-            return redirect('/')
-
             # os.remove("media/profile_images/" + str(image))
     return render(request, 'setting.html', {'user_profile': user_profile})
 
