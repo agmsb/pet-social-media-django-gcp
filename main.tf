@@ -180,6 +180,14 @@ resource "google_storage_bucket" "media" {
   location = "US"
 }
 
+resource "google_storage_bucket_iam_binding" "binding" {
+  bucket = google_storage_bucket.media.name
+  role = "roles/storage.objectViewer"
+  members = [
+    "allUsers",
+  ]
+}
+
 # Step 8: Prepare the secrets for Django
 resource "google_secret_manager_secret_version" "django_settings" {
   secret = google_secret_manager_secret.django_settings.id
