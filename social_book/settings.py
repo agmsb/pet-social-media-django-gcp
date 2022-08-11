@@ -61,9 +61,9 @@ PORT = 8080
 LOCAL_HOST_1 = '127.0.0.1'
 LOCAL_HOST_2 = '0.0.0.0'
 
-WEBISTE_URL_US_CENTRAL1 = 'https://petsocialmedia-356303--us-central1-j2ys2raxoq-uc.a.run.app' # TODO: change to your website url in us-central1
-WEBISTE_URL_US_WEST1 = 'https://petsocialmedia-356303--us-west1-j2ys2raxoq-uw.a.run.app' # TODO: change to your website url in us-west1
-WEBISTE_URL_US_EAST1 = 'https://petsocialmedia-356303--us-east1-j2ys2raxoq-ue.a.run.app' # TODO: change to your website url in us-east1
+WEBISTE_URL_US_CENTRAL1 = '' # TODO: change to your website url in us-central1
+WEBISTE_URL_US_WEST1 = '' # TODO: change to your website url in us-west1
+WEBISTE_URL_US_EAST1 = '' # TODO: change to your website url in us-east1
 WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
 
 LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'
