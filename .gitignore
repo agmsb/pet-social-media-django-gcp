@@ -1,7 +1,3 @@
-deploystack.json
-.vscode
-test
-
 .env
 .vscode
 .DS_Store
