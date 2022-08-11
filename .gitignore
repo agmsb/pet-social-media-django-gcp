@@ -8,3 +8,13 @@ test
 .terraform.lock.hcl
 app.yaml
 deploystack.json
+
+# OSX trash
+.DS_Store
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
