@@ -24,17 +24,25 @@ import random
 import os
 import hashlib
 from datetime import datetime, date
+from google.cloud import storage,secretmanager, translate_v2 as translate
 
-from google.cloud import storage, translate_v2 as translate
+secret_client = secretmanager.SecretManagerServiceClient()
+PROJECT_ID = os.environ.get('PROJECT_ID')
 
-GOOGLE_APPLICATION_CREDENTIALS = 'core/config/credential.json' # change to your path to credentials json
-BUCKET_NAME = str(os.environ.get("BUCKET_NAME")) + "-bucket" # change this with your bucket name
+def get_secret(secret_name, project_id):
+    name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    response = secret_client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+GOOGLE_APPLICATION_CREDENTIALS = 'core/config/credential.json'
+BUCKET_NAME = str(get_secret("BUCKET_NAME", PROJECT_ID)) + "-bucket" 
 
 storage_client = storage.Client()
 translate_client = translate.Client()
 bucket = storage_client.bucket(BUCKET_NAME)
 
 def hash_function(text): 
+    """Hashes a string using SHA256."""
     return hashlib.sha256(text.encode()).hexdigest()
 
 def translate(request):

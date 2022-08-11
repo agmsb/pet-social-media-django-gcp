@@ -12,4 +12,4 @@ RUN pip install --upgrade pip -r requirements.txt
 RUN export GOOGLE_APPLICATION_CREDENTIALS="core/config/credential.json"
 
 COPY . .
-CMD python3 manage.py runserver --insecure 0.0.0.0:8080
+CMD PRODUCTION_MODE="production" python3 manage.py runserver 0.0.0.0:8080

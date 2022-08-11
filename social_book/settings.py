@@ -27,41 +27,72 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
+from django.core.management.utils import get_random_secret_key
+from google.cloud import secretmanager
+secret_client = secretmanager.SecretManagerServiceClient()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/3.2/howto/deploymepnt/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY ='django-insecure-y6on4&^y1+^c$5_h4eh-i2fz-c6jmagos9$5b!o!%8=08s#!tm'
+SECRET_KEY = get_random_secret_key()
+PROJECT_ID = os.environ.get('PROJECT_ID')
+if not PROJECT_ID: 
+    print("PROJECT_ID not set. Please try again")
+
+def get_secret(secret_name, project_id):
+    name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    response = secret_client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
+
+def process_url(url):
+    """Process the URL to remove the protocol and the trailing slash."""
+    url = url.replace("https://", "")
+    if url[:-1] == "/":
+        url = url[:len(url)-1]
+    return url
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-WEBISTE_URL = '' # TODO: change to your website url
-LOCAL_WEBSITE_URL = 'http://0.0.0.0:8080/'
-
+DEBUG = True # TODO: Change this to False in production
+PORT = 8080
 LOCAL_HOST_1 = '127.0.0.1'
 LOCAL_HOST_2 = '0.0.0.0'
-WEBISTE_HOST_1 = '' # TODO: change this with your cloud run url wuthout "https://"
+
+WEBISTE_URL_US_CENTRAL1 = 'https://petsocialmedia-356303--us-central1-j2ys2raxoq-uc.a.run.app' # TODO: change to your website url in us-central1
+WEBISTE_URL_US_WEST1 = 'https://petsocialmedia-356303--us-west1-j2ys2raxoq-uw.a.run.app' # TODO: change to your website url in us-west1
+WEBISTE_URL_US_EAST1 = 'https://petsocialmedia-356303--us-east1-j2ys2raxoq-ue.a.run.app' # TODO: change to your website url in us-east1
+WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
+
+LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'
+DOMAIN_URL = os.environ.get("DOMAIN_NAME")
+
+WEBISTE_HOST_US_CENTRAL1 = process_url(WEBISTE_URL_US_CENTRAL1)
+WEBISTE_HOST_US_WEST1 = process_url(WEBISTE_URL_US_WEST1)
+WEBISTE_HOST_US_EAST1 = process_url(WEBISTE_URL_US_EAST1)
+DOMAIN_HOST = process_url(DOMAIN_URL)
 
 CSRF_TRUSTED_ORIGINS = [
-    WEBISTE_URL,
+    WEBISTE_URL_US_CENTRAL1,
+    WEBISTE_URL_US_WEST1, 
+    WEBISTE_URL_US_EAST1,
     LOCAL_WEBSITE_URL,
+    DOMAIN_URL
 ]
 
 ALLOWED_HOSTS = [
     LOCAL_HOST_1,
     LOCAL_HOST_2,
-    WEBISTE_HOST_1, 
+    WEBISTE_HOST_US_CENTRAL1, 
+    WEBISTE_HOST_US_EAST1, 
+    WEBISTE_HOST_US_WEST1,
+    WEBSITE_GLOBAL_HOST,
+    DOMAIN_HOST,
     'localhost'
 ]
+
 
 # Application definition
 
@@ -109,19 +140,15 @@ WSGI_APPLICATION = 'social_book.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASE_NAME = os.environ.get('DATABASE_NAME')
-DATABASE_USER = os.environ.get('DATABASE_USER')
-DATABASE_PASSWORD = os.environ.get('DATABASE_PASSWORD')
-DATABASE_HOST_PROD = os.environ.get('DATABASE_HOST_PROD')
-DATABASE_PORT_PROD = os.environ.get('DATABASE_PORT_PROD')
-
-DATABASE_NAME = 'django' 
-DATABASE_USER = 'django' 
-DATABASE_PASSWORD = '172.25.0.3' # change this with your database password
+DATABASE_NAME = get_secret("DATABASE_NAME", PROJECT_ID) 
+DATABASE_USER = get_secret("DATABASE_USER", PROJECT_ID) 
+DATABASE_PASSWORD = get_secret("DATABASE_PASSWORD", PROJECT_ID)
+DATABASE_HOST_PROD = get_secret("DATABASE_HOST_PROD", PROJECT_ID) 
+DATABASE_PORT_PROD = get_secret("DATABASE_PORT_PROD", PROJECT_ID) 
 DATABASE_HOST_LOCAL = '0.0.0.0' 
 DATABASE_PORT_LOCAL = '8002'
 
-if os.environ.get("PRODUCTION_MODE") == "prod":
+if os.environ.get("PRODUCTION_MODE") == "production":
     DATABASES = {
         # Production
         'default': {
