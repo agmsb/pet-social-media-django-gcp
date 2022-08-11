@@ -1,9 +1,15 @@
 .env
-docker-compose.yml
+.vscode
+.DS_Store
+
+# docker-compose
 docker-compose.debug.yml
-terraform.tfstate
-terraform.tfstate.backup
+
+# terraform
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/.terraform.lock.hcl
+
+# deploy stack
 test
-.terraform.lock.hcl
-app.yaml
 deploystack.json
