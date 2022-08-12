@@ -16,16 +16,14 @@
 version: '3.4'
 
 services:
-  petsocialmedia_db:
+  socialmedia_db:
         image: gcr.io/cloudsql-docker/gce-proxy@sha256:711523c557d3044f9d92cdbad77014b655793c2855ecdc54d5a6d20d8d557861
         ports:
             - 8002:8002
-        command: ./cloud_sql_proxy -instances={YOUR_INSTANCE_CONNECTION}=tcp:127.0.0.1:8002 -credential_file= core/config/credential.json
-        volumes:
-        - ${GOOGLE_APPLICATION_CREDENTIALS}:core/config/credential.json
+        command: ./cloud_sql_proxy -instances={YOUR_INSTANCE_CONNECTION}=tcp:127.0.0.1:8002 
         restart: always
-  petsocialmediadjangogcp:
-    image: petsocialmediadjangogcp
+  socialmediadjangogcp:
+    image: socialmediadjangogcp
     build:
       context: .
       dockerfile: ./Dockerfile

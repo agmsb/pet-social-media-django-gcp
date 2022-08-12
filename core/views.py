@@ -34,12 +34,11 @@ def get_secret(secret_name, project_id):
     response = secret_client.access_secret_version(request={"name": name})
     return response.payload.data.decode("UTF-8")
 
-GOOGLE_APPLICATION_CREDENTIALS = 'core/config/credential.json'
-BUCKET_NAME = str(get_secret("BUCKET_NAME", PROJECT_ID)) + "-bucket" 
+GS_BUCKET_NAME = str(get_secret("BUCKET_NAME", PROJECT_ID)) + "-bucket" 
 
 storage_client = storage.Client()
 translate_client = translate.Client()
-bucket = storage_client.bucket(BUCKET_NAME)
+bucket = storage_client.bucket(GS_BUCKET_NAME)
 
 def hash_function(text): 
     """Hashes a string using SHA256."""
@@ -77,12 +76,12 @@ def get_current_time():
     return str(current_time)
 
 def list_blobs_posts(prefix):
-    blobs = storage_client.list_blobs(BUCKET_NAME, prefix=prefix, delimiter=None)
+    blobs = storage_client.list_blobs(GS_BUCKET_NAME, prefix=prefix, delimiter=None)
 
     print("Blobs:")
     blob_list = []
     for blob in blobs:
-        blob_list.append("https://storage.cloud.google.com/" + BUCKET_NAME + "/" + blob.name)
+        blob_list.append("https://storage.cloud.google.com/" + GS_BUCKET_NAME + "/" + blob.name)
 
     return blob_list
 
@@ -174,14 +173,14 @@ def upload(request):
         new_post = Post.objects.create(user=user, image=image, caption=caption)
         new_post.save()
 
-        upload_blob_from_memory(BUCKET_NAME, "media/post_images/" + image_str,  hash_userid + "/posts/" + time)
+        upload_blob_from_memory(GS_BUCKET_NAME, "media/post_images/" + image_str,  hash_userid + "/posts/" + time)
         
         if caption is not None: 
             update_metadata_post(user, caption, time)
 
         blob = bucket.get_blob(hash_userid + "/posts/" + time)
         
-        new_post = PostGCP.objects.create(user=user, image="https://storage.cloud.google.com/" + BUCKET_NAME + "/" + blob.name, caption=caption)
+        new_post = PostGCP.objects.create(user=user, image="https://storage.cloud.google.com/" + GS_BUCKET_NAME + "/" + blob.name, caption=caption)
         new_post.save()
 
         print(caption)
@@ -352,10 +351,10 @@ def settings(request):
             with open("media/blank-profile-picture.png", 'wb') as f:
                 f.write(image.read())
 
-            upload_blob_from_memory(BUCKET_NAME, "media/blank-profile-picture.png", hash_userid + "/profile/profile.png")
+            upload_blob_from_memory(GS_BUCKET_NAME, "media/blank-profile-picture.png", hash_userid + "/profile/profile.png")
             update_metadata(username, bio, location)
 
-            user_profile.profileimg = "https://storage.cloud.google.com/" + BUCKET_NAME + "/" + hash_userid + "/profile/profile.png"
+            user_profile.profileimg = "https://storage.cloud.google.com/" + GS_BUCKET_NAME + "/" + hash_userid + "/profile/profile.png"
             user_profile.bio = bio
             user_profile.location = location
             user_profile.save()
@@ -383,7 +382,7 @@ def signup(request):
                 user.save()
 
                 hash_userid = hash_function(username)
-                upload_blob_from_memory(BUCKET_NAME, "media/blank-profile-picture.png", str(hash_userid) + "/profile/profile.png")
+                upload_blob_from_memory(GS_BUCKET_NAME, "media/blank-profile-picture.png", str(hash_userid) + "/profile/profile.png")
                 
                 blob = bucket.get_blob(str(hash_userid) + "/profile/profile.png")
                 metadata = {'userid': hash_userid, username: username}
@@ -395,7 +394,7 @@ def signup(request):
                 auth.login(request, user_login)
 
                 #create a Profile object for the new user
-                image_file_url = "https://storage.cloud.google.com/" + BUCKET_NAME + "/" + str(hash_userid) + "/profile/profile.png"
+                image_file_url = "https://storage.cloud.google.com/" + GS_BUCKET_NAME + "/" + str(hash_userid) + "/profile/profile.png"
                 user_model = User.objects.get(username=username)
                 new_profile = ProfileGCP.objects.create(user=user_model, id_user=user_model.id, profileimg=image_file_url)
                 new_profile.save()

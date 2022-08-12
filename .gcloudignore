@@ -6,9 +6,9 @@
 docker-compose.debug.yml
 
 # terraform
-terraform/terraform.tfstate
-terraform/terraform.tfstate.backup
-terraform/.terraform
+terraform.tfstate
+terraform.tfstate.backup
+.terraform
 
 
 # deploy stack

@@ -28,8 +28,3 @@ variable "service" {
   default     = "socialmedia"
   description = "The name of the service"
 }
-
-variable "domain" {
-  type        = string
-  description = "The custom domain of the service (e.g. abc.com) (leave blank to skip this step)"
-}

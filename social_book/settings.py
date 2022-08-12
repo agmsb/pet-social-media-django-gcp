@@ -61,35 +61,31 @@ PORT = 8080
 LOCAL_HOST_1 = '127.0.0.1'
 LOCAL_HOST_2 = '0.0.0.0'
 
-WEBISTE_URL_US_CENTRAL1 = 'https://petsocialmedia-356303--us-central1-j2ys2raxoq-uc.a.run.app' # TODO: change to your website url in us-central1
-WEBISTE_URL_US_WEST1 = 'https://petsocialmedia-356303--us-west1-j2ys2raxoq-uw.a.run.app' # TODO: change to your website url in us-west1
-WEBISTE_URL_US_EAST1 = 'https://petsocialmedia-356303--us-east1-j2ys2raxoq-ue.a.run.app' # TODO: change to your website url in us-east1
+WEBSITE_URL_US_CENTRAL1 = get_secret("WEBSITE_URL_US_CENTRAL1", PROJECT_ID) 
+WEBSITE_URL_US_WEST1 = get_secret("WEBSITE_URL_US_WEST1", PROJECT_ID)
+WEBSITE_URL_US_EAST1 = get_secret("WEBSITE_URL_US_EAST1", PROJECT_ID)
 WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
 
 LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'
-DOMAIN_URL = os.environ.get("DOMAIN_NAME")
 
-WEBISTE_HOST_US_CENTRAL1 = process_url(WEBISTE_URL_US_CENTRAL1)
-WEBISTE_HOST_US_WEST1 = process_url(WEBISTE_URL_US_WEST1)
-WEBISTE_HOST_US_EAST1 = process_url(WEBISTE_URL_US_EAST1)
-DOMAIN_HOST = process_url(DOMAIN_URL)
+WEBSITE_HOST_US_CENTRAL1 = process_url(WEBSITE_URL_US_CENTRAL1)
+WEBSITE_HOST_US_WEST1 = process_url(WEBSITE_URL_US_WEST1)
+WEBSITE_HOST_US_EAST1 = process_url(WEBSITE_URL_US_EAST1)
 
 CSRF_TRUSTED_ORIGINS = [
-    WEBISTE_URL_US_CENTRAL1,
-    WEBISTE_URL_US_WEST1, 
-    WEBISTE_URL_US_EAST1,
+    WEBSITE_URL_US_CENTRAL1,
+    WEBSITE_URL_US_WEST1, 
+    WEBSITE_URL_US_EAST1,
     LOCAL_WEBSITE_URL,
-    DOMAIN_URL
 ]
 
 ALLOWED_HOSTS = [
     LOCAL_HOST_1,
     LOCAL_HOST_2,
-    WEBISTE_HOST_US_CENTRAL1, 
-    WEBISTE_HOST_US_EAST1, 
-    WEBISTE_HOST_US_WEST1,
+    WEBSITE_HOST_US_CENTRAL1, 
+    WEBSITE_HOST_US_EAST1, 
+    WEBSITE_HOST_US_WEST1,
     WEBSITE_GLOBAL_HOST,
-    DOMAIN_HOST,
     'localhost'
 ]
 
@@ -140,15 +136,12 @@ WSGI_APPLICATION = 'social_book.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASE_NAME = get_secret("DATABASE_NAME", PROJECT_ID) 
-DATABASE_USER = get_secret("DATABASE_USER", PROJECT_ID) 
-DATABASE_PASSWORD = get_secret("DATABASE_PASSWORD", PROJECT_ID)
-DATABASE_HOST_PROD = get_secret("DATABASE_HOST_PROD", PROJECT_ID) 
-DATABASE_PORT_PROD = get_secret("DATABASE_PORT_PROD", PROJECT_ID) 
-DATABASE_HOST_LOCAL = '0.0.0.0' 
-DATABASE_PORT_LOCAL = '8002'
-
 if os.environ.get("PRODUCTION_MODE") == "production":
+    DATABASE_NAME = get_secret("DATABASE_NAME", PROJECT_ID) 
+    DATABASE_USER = get_secret("DATABASE_USER", PROJECT_ID) 
+    DATABASE_PASSWORD = get_secret("DATABASE_PASSWORD", PROJECT_ID)
+    DATABASE_HOST_PROD = get_secret("DATABASE_HOST_PROD", PROJECT_ID) 
+    DATABASE_PORT_PROD = get_secret("DATABASE_PORT_PROD", PROJECT_ID) 
     DATABASES = {
         # Production
         'default': {
@@ -161,7 +154,12 @@ if os.environ.get("PRODUCTION_MODE") == "production":
         }
     }
 elif os.environ.get("PRODUCTION_MODE") == "local":
-     DATABASES = {
+    DATABASE_NAME = get_secret("DATABASE_NAME", PROJECT_ID) 
+    DATABASE_USER = get_secret("DATABASE_USER", PROJECT_ID) 
+    DATABASE_PASSWORD = get_secret("DATABASE_PASSWORD", PROJECT_ID)
+    DATABASE_HOST_LOCAL = '0.0.0.0' 
+    DATABASE_PORT_LOCAL = '8002'
+    DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': DATABASE_NAME,

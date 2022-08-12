@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "sql_private_ip_address" {
-  value     = google_sql_database_instance.instance.private_ip_address
-}
-
 output "url" {
   value = "http://${module.lb-http.external_ip}"
   description = "The URL of the load balancer with the external IP address. Use this to set up custom domain mapping."

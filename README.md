@@ -39,7 +39,7 @@ To remove all billing components from the project
    gcloud services enable \
      cloudbuild.googleapis.com \
      run.googleapis.com \
-     cloudresourcemanager.googleapis.com
+     vpcaccess.googleapis.com
    ```
 
 4. Build base image

@@ -7,10 +7,10 @@ core/config/credential.json
 docker-compose.debug.yml
 
 # terraform
-terraform/terraform.tfstate
-terraform/.terraform.tfstate.lock.info
-terraform/terraform.tfstate.backup
-terraform/.terraform
+terraform.tfstate
+.terraform.tfstate.lock.info
+terraform.tfstate.backup
+.terraform
 
 # deploy stack
 test

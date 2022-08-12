@@ -7,4 +7,3 @@ pymysql.install_as_MySQLdb()
 
 # Load environment variables from .env file
 load_dotenv()
-GOOGLE_APPLICATION_CREDENTIALS = 'core/config/credential.json' # change to your path to credentials json
