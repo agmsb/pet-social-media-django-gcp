@@ -62,13 +62,13 @@ PORT = 8080
 LOCAL_HOST_1 = '127.0.0.1'
 LOCAL_HOST_2 = '0.0.0.0'
 
-try: 
+try:
     WEBSITE_URL_US_CENTRAL1 = get_secret("WEBSITE_URL_US_CENTRAL1", PROJECT_ID) 
     WEBSITE_URL_US_WEST1 = get_secret("WEBSITE_URL_US_WEST1", PROJECT_ID)
     WEBSITE_URL_US_EAST1 = get_secret("WEBSITE_URL_US_EAST1", PROJECT_ID)
     WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
-except:
-    print("Secrets not set yet. Try running terraform to set the secrets.")
+except: 
+    print("Secrets not set. Try running terraform before running this script.")
     exit()
 
 LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'

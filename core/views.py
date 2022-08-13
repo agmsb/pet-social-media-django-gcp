@@ -35,7 +35,6 @@ def get_secret(secret_name, project_id):
     return response.payload.data.decode("UTF-8")
 
 GS_BUCKET_NAME = str(get_secret("BUCKET_NAME", PROJECT_ID)) + "-bucket" 
-
 storage_client = storage.Client()
 translate_client = translate.Client()
 bucket = storage_client.bucket(GS_BUCKET_NAME)
