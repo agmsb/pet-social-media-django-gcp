@@ -6,19 +6,13 @@ core/config/credential.json
 # docker-compose
 docker-compose.debug.yml
 
-# terraform
-.terraform.lock.hcl
-
-# OSX trash
-.DS_Store
-app.yaml
-
-# Local .terraform directories
-**/.terraform/*
-
 # .tfstate files
+.terraform
+**/.terraform/*
 *.tfstate
 *.tfstate.*
+
+_pycache_/*
 
 # deploy stack
 test

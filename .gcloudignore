@@ -1,24 +1,15 @@
 .env
 .vscode
 .DS_Store
-core/config/credential.json
 
 # docker-compose
 docker-compose.debug.yml
 
 # terraform
-.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+.terraform
 
-# OSX trash
-.DS_Store
-app.yaml
-
-# Local .terraform directories
-**/.terraform/**
-
-# .tfstate files
-*.tfstate
-*.tfstate.*
 
 # deploy stack
 test

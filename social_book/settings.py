@@ -41,7 +41,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = get_random_secret_key()
 PROJECT_ID = os.environ.get('PROJECT_ID')
 if not PROJECT_ID: 
-    print("PROJECT_ID not set. Please try again")
+    print("PROJECT_ID not set. Try running export PROJECT_ID=your-project-id before running this script.")
+    exit()
 
 def get_secret(secret_name, project_id):
     name = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
@@ -61,10 +62,14 @@ PORT = 8080
 LOCAL_HOST_1 = '127.0.0.1'
 LOCAL_HOST_2 = '0.0.0.0'
 
-WEBSITE_URL_US_CENTRAL1 = get_secret("WEBSITE_URL_US_CENTRAL1", PROJECT_ID) 
-WEBSITE_URL_US_WEST1 = get_secret("WEBSITE_URL_US_WEST1", PROJECT_ID)
-WEBSITE_URL_US_EAST1 = get_secret("WEBSITE_URL_US_EAST1", PROJECT_ID)
-WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
+try: 
+    WEBSITE_URL_US_CENTRAL1 = get_secret("WEBSITE_URL_US_CENTRAL1", PROJECT_ID) 
+    WEBSITE_URL_US_WEST1 = get_secret("WEBSITE_URL_US_WEST1", PROJECT_ID)
+    WEBSITE_URL_US_EAST1 = get_secret("WEBSITE_URL_US_EAST1", PROJECT_ID)
+    WEBSITE_GLOBAL_HOST = get_secret("EXTERNAL_IP", PROJECT_ID) 
+except:
+    print("Secrets not set yet. Try running terraform to set the secrets.")
+    exit()
 
 LOCAL_WEBSITE_URL = 'https://{LOCAL_HOST_2}:{PORT}/'
 
@@ -215,9 +220,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/third_party/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'third_party/static'),)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
