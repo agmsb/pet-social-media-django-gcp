@@ -94,6 +94,7 @@ resource "google_compute_global_address" "private_ip_address" {
   address_type  = "INTERNAL"
   prefix_length = 16
   network       = google_compute_network.main.id
+  depends_on = [google_project_service.vpcaccess]
 }
 
 resource "google_service_networking_connection" "private_vpc_connection" {
@@ -102,6 +103,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   network                 = google_compute_network.main.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+  depends_on = [google_project_service.vpcaccess]
 }
 
 resource "google_vpc_access_connector" "connector" {
@@ -110,6 +112,7 @@ resource "google_vpc_access_connector" "connector" {
   ip_cidr_range = "10.${each.value}.0.0/28"
   region        = each.key
   network       = google_compute_network.main.name
+  depends_on = [google_project_service.vpcaccess]
 }
 
 
