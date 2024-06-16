@@ -62,3 +62,9 @@ Run locally
 Run ``PRODUCTION_MODE="production" python3 manage.py runserver --insecure 0.0.0.0:8080``
 
 This is not an official Google product.
+
+### Infrastructure model
+![Infrastructure main model](.infragenie/infrastructure_main_model.svg)
+- [socialmediadjangogcp component model](.infragenie/socialmediadjangogcp_component_model.svg)
+
+---
